@@ -10,6 +10,10 @@ const GOOGLE_KEY  = process.env.GOOGLE_PLACES_KEY;
 const YELP_KEY    = process.env.YELP_API_KEY;
 const HUNTER_KEY  = process.env.HUNTER_API_KEY;
 const APOLLO_KEY  = process.env.APOLLO_API_KEY;
+const SNOV_ID     = process.env.SNOV_CLIENT_ID;
+const SNOV_SECRET = process.env.SNOV_SECRET;
+const APIFY_KEY   = process.env.APIFY_KEY;
+// CLAY_API_KEY stored in .env; Clay enrichment runs via their platform (table setup required)
 
 if (!GOOGLE_KEY) {
   console.error('FATAL: GOOGLE_PLACES_KEY missing from .env');
@@ -309,10 +313,96 @@ async function apolloSearch(domain) {
   }
 }
 
-// ── Email waterfall: Hunter → Apollo ──────────────────────────────────────────
+// ── Snov.io ───────────────────────────────────────────────────────────────────
+let _snovToken = null;
+
+async function getSnovToken() {
+  if (_snovToken) return _snovToken;
+  try {
+    const { body } = await httpPost('https://api.snov.io/v1/oauth/access_token', {
+      grant_type: 'client_credentials',
+      client_id: SNOV_ID,
+      client_secret: SNOV_SECRET,
+    });
+    _snovToken = body.access_token || null;
+    return _snovToken;
+  } catch (e) {
+    warn(`Snov.io auth failed: ${e.message}`);
+    return null;
+  }
+}
+
+async function snovSearch(domain) {
+  if (!SNOV_ID || !domain) return null;
+  const token = await getSnovToken();
+  if (!token) return null;
+  try {
+    const { body } = await httpPost('https://api.snov.io/v2/get-domain-emails', {
+      access_token: token, domain, type: 'all', limit: 5,
+    });
+    const emails = (body.data?.emails || body.emails || []);
+    if (!emails.length) return null;
+    const e = emails[0];
+    return {
+      email:        e.email || '',
+      contactName:  [e.firstName, e.lastName].filter(Boolean).join(' '),
+      contactTitle: e.position || '',
+    };
+  } catch (e) {
+    warn(`Snov.io error for ${domain}: ${e.message}`);
+    return null;
+  }
+}
+
+// ── Apify email extractor ─────────────────────────────────────────────────────
+// Scrapes the company website and extracts any email addresses found.
+// Slowest source — only runs when Hunter, Apollo, and Snov.io all fail.
+async function apifyExtract(website) {
+  if (!APIFY_KEY || !website) return null;
+  try {
+    const { status, body: run } = await httpPost(
+      'https://api.apify.com/v2/acts/apify~email-extractor/runs',
+      { startUrls: [{ url: website }], maxDepth: 1 },
+      { Authorization: `Bearer ${APIFY_KEY}` },
+    );
+    if (status !== 201) { warn(`Apify start failed HTTP ${status}`); return null; }
+
+    const runId = run.data?.id;
+    if (!runId) return null;
+
+    // Poll up to 60 s for the actor to finish
+    for (let i = 0; i < 12; i++) {
+      await sleep(5000);
+      const { body: rs } = await httpGet(
+        `https://api.apify.com/v2/actor-runs/${runId}`,
+        { Authorization: `Bearer ${APIFY_KEY}` },
+      );
+      const st = rs.data?.status;
+      if (st === 'SUCCEEDED') {
+        const dsId = rs.data.defaultDatasetId;
+        const { body: items } = await httpGet(
+          `https://api.apify.com/v2/datasets/${dsId}/items`,
+          { Authorization: `Bearer ${APIFY_KEY}` },
+        );
+        const found = (Array.isArray(items) ? items : [])
+          .flatMap(item => item.emails || [])
+          .filter(e => e && !e.includes('example.') && !e.includes('sentry.'));
+        return found.length ? { email: found[0], contactName: '', contactTitle: '' } : null;
+      }
+      if (['FAILED', 'ABORTED', 'TIMED-OUT'].includes(st)) break;
+    }
+    return null;
+  } catch (e) {
+    warn(`Apify error for ${website}: ${e.message}`);
+    return null;
+  }
+}
+
+// ── Email waterfall: Hunter → Apollo → Snov.io → Apify ───────────────────────
 async function findEmail(name, website) {
   const domains = domainCandidates(name, website);
-  if (!domains.length) return { email: '', contactName: '', contactTitle: '', emailSource: '' };
+  const empty   = { email: '', contactName: '', contactTitle: '', emailSource: '' };
+  if (!domains.length && !website) return empty;
 
   // Phase A: Hunter.io
   if (HUNTER_KEY) {
@@ -323,16 +413,31 @@ async function findEmail(name, website) {
     }
   }
 
-  // Phase B: Apollo.io (only runs if Hunter found nothing)
+  // Phase B: Apollo.io
   if (APOLLO_KEY) {
     for (const domain of domains) {
       await sleep(350);
-      const result = await apolloSearch(domain);
-      if (result) return { ...result, emailSource: 'Apollo' };
+      const r = await apolloSearch(domain);
+      if (r) return { ...r, emailSource: 'Apollo' };
     }
   }
 
-  return { email: '', contactName: '', contactTitle: '', emailSource: '' };
+  // Phase C: Snov.io
+  if (SNOV_ID) {
+    for (const domain of domains) {
+      await sleep(350);
+      const r = await snovSearch(domain);
+      if (r) return { ...r, emailSource: 'Snov.io' };
+    }
+  }
+
+  // Phase D: Apify — scrapes the company website directly (slowest, last resort)
+  if (APIFY_KEY && website) {
+    const r = await apifyExtract(website);
+    if (r) return { ...r, emailSource: 'Apify' };
+  }
+
+  return empty;
 }
 
 // ── CSV ───────────────────────────────────────────────────────────────────────
@@ -347,7 +452,7 @@ async function main() {
   const t0 = Date.now();
   info('='.repeat(54));
   info('Deal Scraper — San Antonio MSA Property Management');
-  info(`APIs: Google=yes  Yelp=${YELP_KEY ? 'yes' : 'NO'}  Hunter=${HUNTER_KEY ? 'yes' : 'NO'}  Apollo=${APOLLO_KEY ? 'yes' : 'NO'}`);
+  info(`APIs: Google=yes | Yelp=${YELP_KEY ? 'yes' : 'NO'} | Hunter=${HUNTER_KEY ? 'yes' : 'NO'} | Apollo=${APOLLO_KEY ? 'yes' : 'NO'} | Snov=${SNOV_ID ? 'yes' : 'NO'} | Apify=${APIFY_KEY ? 'yes' : 'NO'}`);
   info(`Log : ${LOG_FILE}`);
   info('='.repeat(54));
 
@@ -438,8 +543,10 @@ async function main() {
   }
 
   // ── Phase 3: Email enrichment (Hunter → Apollo waterfall) ────────────
-  if (HUNTER_KEY || APOLLO_KEY) {
-    info(`\nPHASE 3 — Email Enrichment (Hunter${APOLLO_KEY ? ' → Apollo' : ''})`);
+  if (HUNTER_KEY || APOLLO_KEY || SNOV_ID || APIFY_KEY) {
+    const chain = ['Hunter', APOLLO_KEY && 'Apollo', SNOV_ID && 'Snov.io', APIFY_KEY && 'Apify']
+      .filter(Boolean).join(' → ');
+    info(`\nPHASE 3 — Email Enrichment (${chain})`);
     let enriched = 0;
     for (const co of companies) {
       const result = await findEmail(co.name, co.website);
@@ -455,7 +562,7 @@ async function main() {
     }
     info(`\nPhase 3 done — ${enriched}/${companies.length} emails found`);
   } else {
-    warn('\nPhase 3 skipped — no enrichment keys set');
+    warn('\nPhase 3 skipped — no enrichment API keys set');
   }
 
   // ── Phase 4: CSV export ────────────────────────────────────────────────
