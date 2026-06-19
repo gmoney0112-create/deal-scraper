@@ -202,43 +202,42 @@ function domainCandidates(name, website) {
   return [`${slug}.com`, `${slug}pm.com`, `${slug}realty.com`];
 }
 
-// ── Google Places ─────────────────────────────────────────────────────────────
-async function googleSearch(query, lat, lng, pageToken) {
-  const p = new URLSearchParams({
-    query, location: `${lat},${lng}`, radius: String(RADIUS), key: GOOGLE_KEY,
-    ...(pageToken ? { pagetoken: pageToken } : {}),
-  });
-  const { body } = await withRetry(() =>
-    httpGet(`https://maps.googleapis.com/maps/api/place/textsearch/json?${p}`)
-  );
-  if (body.status === 'REQUEST_DENIED')
-    throw new Error(`Google API key denied: ${body.error_message}`);
-  return body;
-}
+// ── Google Places API (New) ───────────────────────────────────────────────────
+// Uses Places API (New) — returns all fields in one call, no separate Details needed
+const GOOGLE_FIELD_MASK = [
+  'places.id', 'places.displayName', 'places.formattedAddress',
+  'places.nationalPhoneNumber', 'places.websiteUri', 'places.businessStatus',
+  'nextPageToken',
+].join(',');
 
-async function googleDetails(placeId) {
-  const p = new URLSearchParams({
-    place_id: placeId,
-    fields: 'name,formatted_address,formatted_phone_number,website,business_status',
-    key: GOOGLE_KEY,
-  });
-  const { body } = await withRetry(() =>
-    httpGet(`https://maps.googleapis.com/maps/api/place/details/json?${p}`)
+async function googleSearch(query, lat, lng, pageToken) {
+  const { status, body } = await withRetry(() =>
+    httpPost(
+      'https://places.googleapis.com/v1/places:searchText',
+      {
+        textQuery: query,
+        locationBias: { circle: { center: { latitude: lat, longitude: lng }, radius: RADIUS } },
+        pageSize: 20,
+        ...(pageToken ? { pageToken } : {}),
+      },
+      { 'X-Goog-Api-Key': GOOGLE_KEY, 'X-Goog-FieldMask': GOOGLE_FIELD_MASK },
+    )
   );
-  return body.result || {};
+  if (status === 403) throw new Error(`Google Places denied (403): ${JSON.stringify(body)}`);
+  if (status === 400) throw new Error(`Google Places bad request (400): ${JSON.stringify(body)}`);
+  return body;
 }
 
 async function sweepGoogle(term, loc) {
   const out = [];
   let token = null, pages = 0;
   do {
-    if (token) await sleep(2300); // Google requires a delay before next_page_token activates
-    let body;
-    try { body = await googleSearch(term, loc.lat, loc.lng, token); }
+    if (token) await sleep(2300);
+    let res;
+    try { res = await googleSearch(term, loc.lat, loc.lng, token); }
     catch (e) { error(`Google: ${e.message} [${loc.city} / "${term}"]`); break; }
-    if (body.status === 'ZERO_RESULTS') break;
-    out.push(...(body.results || []));
-    token = body.next_page_token || null;
+    out.push(...(res.places || []));
+    token = res.nextPageToken || null;
     pages++;
     await sleep(350);
   } while (token && pages < 3);
@@ -478,20 +477,16 @@ async function main() {
       info(`    ${raw.length} raw results`);
 
       for (const place of raw) {
-        if (seenIds.has(place.place_id)) continue;
-        seenIds.add(place.place_id);
+        if (seenIds.has(place.id)) continue;
+        seenIds.add(place.id);
 
-        let detail = {};
-        try { detail = await googleDetails(place.place_id); await sleep(120); }
-        catch (e) { warn(`    Details failed for ${place.name}: ${e.message}`); }
-
-        if (detail.business_status === 'PERMANENTLY_CLOSED') continue;
+        if (place.businessStatus === 'PERMANENTLY_CLOSED') continue;
 
         const co = {
-          name:         detail.name    || place.name || '',
-          address:      detail.formatted_address || place.formatted_address || '',
-          phone:        detail.formatted_phone_number || '',
-          website:      detail.website || '',
+          name:         place.displayName?.text || '',
+          address:      place.formattedAddress  || '',
+          phone:        place.nationalPhoneNumber || '',
+          website:      place.websiteUri          || '',
           contactName:  '',
           contactTitle: '',
           email:        '',
