@@ -6,9 +6,10 @@ const fs    = require('fs');
 const path  = require('path');
 
 // ── Keys ──────────────────────────────────────────────────────────────────────
-const GOOGLE_KEY = process.env.GOOGLE_PLACES_KEY;
-const YELP_KEY   = process.env.YELP_API_KEY;
-const HUNTER_KEY = process.env.HUNTER_API_KEY;
+const GOOGLE_KEY  = process.env.GOOGLE_PLACES_KEY;
+const YELP_KEY    = process.env.YELP_API_KEY;
+const HUNTER_KEY  = process.env.HUNTER_API_KEY;
+const APOLLO_KEY  = process.env.APOLLO_API_KEY;
 
 if (!GOOGLE_KEY) {
   console.error('FATAL: GOOGLE_PLACES_KEY missing from .env');
@@ -88,6 +89,39 @@ function httpGet(url, headers = {}) {
     );
     req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
     req.on('error', reject);
+  });
+}
+
+function httpPost(url, body, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const data = JSON.stringify(body);
+    const req = https.request(
+      {
+        hostname: u.hostname,
+        path: u.pathname + u.search,
+        method: 'POST',
+        headers: {
+          'User-Agent': 'deal-scraper/1.0',
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data),
+          ...headers,
+        },
+        timeout: 15000,
+      },
+      res => {
+        let raw = '';
+        res.on('data', c => (raw += c));
+        res.on('end', () => {
+          try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
+          catch { reject(new Error(`JSON parse error (HTTP ${res.statusCode})`)); }
+        });
+      }
+    );
+    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
   });
 }
 
@@ -239,14 +273,66 @@ async function hunterLookup(domain) {
   } catch { return null; }
 }
 
-async function findEmail(name, website) {
-  if (!HUNTER_KEY) return '';
-  for (const domain of domainCandidates(name, website)) {
-    await sleep(350);
-    const email = await hunterLookup(domain);
-    if (email) return email;
+// ── Apollo.io ─────────────────────────────────────────────────────────────────
+const APOLLO_TITLES = [
+  'owner', 'president', 'ceo', 'principal', 'managing director',
+  'property manager', 'director of property management',
+  'real estate broker', 'broker', 'vice president', 'manager',
+];
+
+async function apolloSearch(domain) {
+  if (!APOLLO_KEY || !domain) return null;
+  try {
+    const { status, body } = await withRetry(() =>
+      httpPost(
+        'https://api.apollo.io/v1/mixed_people/search',
+        { q_organization_domains_or_urls: domain, person_titles: APOLLO_TITLES, page: 1, per_page: 5 },
+        { 'x-api-key': APOLLO_KEY },
+      )
+    );
+    if (status === 401) { warn('Apollo 401 — check APOLLO_API_KEY'); return null; }
+    if (status === 429) { warn('Apollo 429 — rate limited'); return null; }
+
+    for (const person of (body.people || [])) {
+      if (person.email && person.email_status !== 'unavailable') {
+        return {
+          email:        person.email,
+          contactName:  person.name || `${person.first_name || ''} ${person.last_name || ''}`.trim(),
+          contactTitle: person.title || '',
+        };
+      }
+    }
+    return null;
+  } catch (e) {
+    warn(`Apollo error for ${domain}: ${e.message}`);
+    return null;
   }
-  return '';
+}
+
+// ── Email waterfall: Hunter → Apollo ──────────────────────────────────────────
+async function findEmail(name, website) {
+  const domains = domainCandidates(name, website);
+  if (!domains.length) return { email: '', contactName: '', contactTitle: '', emailSource: '' };
+
+  // Phase A: Hunter.io
+  if (HUNTER_KEY) {
+    for (const domain of domains) {
+      await sleep(350);
+      const email = await hunterLookup(domain);
+      if (email) return { email, contactName: '', contactTitle: '', emailSource: 'Hunter' };
+    }
+  }
+
+  // Phase B: Apollo.io (only runs if Hunter found nothing)
+  if (APOLLO_KEY) {
+    for (const domain of domains) {
+      await sleep(350);
+      const result = await apolloSearch(domain);
+      if (result) return { ...result, emailSource: 'Apollo' };
+    }
+  }
+
+  return { email: '', contactName: '', contactTitle: '', emailSource: '' };
 }
 
 // ── CSV ───────────────────────────────────────────────────────────────────────
@@ -261,7 +347,7 @@ async function main() {
   const t0 = Date.now();
   info('='.repeat(54));
   info('Deal Scraper — San Antonio MSA Property Management');
-  info(`APIs: Google=yes  Yelp=${YELP_KEY ? 'yes' : 'NO'}  Hunter=${HUNTER_KEY ? 'yes' : 'NO'}`);
+  info(`APIs: Google=yes  Yelp=${YELP_KEY ? 'yes' : 'NO'}  Hunter=${HUNTER_KEY ? 'yes' : 'NO'}  Apollo=${APOLLO_KEY ? 'yes' : 'NO'}`);
   info(`Log : ${LOG_FILE}`);
   info('='.repeat(54));
 
@@ -297,12 +383,15 @@ async function main() {
         if (detail.business_status === 'PERMANENTLY_CLOSED') continue;
 
         const co = {
-          name:    detail.name    || place.name || '',
-          address: detail.formatted_address || place.formatted_address || '',
-          phone:   detail.formatted_phone_number || '',
-          website: detail.website || '',
-          email:   '',
-          source:  'Google Places',
+          name:         detail.name    || place.name || '',
+          address:      detail.formatted_address || place.formatted_address || '',
+          phone:        detail.formatted_phone_number || '',
+          website:      detail.website || '',
+          contactName:  '',
+          contactTitle: '',
+          email:        '',
+          emailSource:  '',
+          source:       'Google Places',
         };
         if (add(co)) info(`    + ${co.name}`);
       }
@@ -328,12 +417,15 @@ async function main() {
                 .filter(Boolean).join(', ')
             : '';
           const co = {
-            name:    biz.name || '',
-            address: addr,
-            phone:   biz.display_phone || biz.phone || '',
-            website: biz.url || '',
-            email:   '',
-            source:  'Yelp',
+            name:         biz.name || '',
+            address:      addr,
+            phone:        biz.display_phone || biz.phone || '',
+            website:      biz.url || '',
+            contactName:  '',
+            contactTitle: '',
+            email:        '',
+            emailSource:  '',
+            source:       'Yelp',
           };
           if (add(co)) info(`    + ${co.name}`);
         }
@@ -345,32 +437,37 @@ async function main() {
     warn('\nPhase 2 skipped — YELP_API_KEY not set');
   }
 
-  // ── Phase 3: Hunter.io enrichment ─────────────────────────────────────
-  if (HUNTER_KEY) {
-    info('\nPHASE 3 — Hunter.io Email Enrichment');
+  // ── Phase 3: Email enrichment (Hunter → Apollo waterfall) ────────────
+  if (HUNTER_KEY || APOLLO_KEY) {
+    info(`\nPHASE 3 — Email Enrichment (Hunter${APOLLO_KEY ? ' → Apollo' : ''})`);
     let enriched = 0;
     for (const co of companies) {
-      const email = await findEmail(co.name, co.website);
-      if (email) {
-        co.email = email;
+      const result = await findEmail(co.name, co.website);
+      if (result.email) {
+        co.email        = result.email;
+        co.contactName  = result.contactName;
+        co.contactTitle = result.contactTitle;
+        co.emailSource  = result.emailSource;
         enriched++;
-        info(`  ${co.name} → ${email}`);
+        const who = result.contactName ? ` (${result.contactName})` : '';
+        info(`  [${result.emailSource}] ${co.name}${who} → ${result.email}`);
       }
     }
     info(`\nPhase 3 done — ${enriched}/${companies.length} emails found`);
   } else {
-    warn('\nPhase 3 skipped — HUNTER_API_KEY not set');
+    warn('\nPhase 3 skipped — no enrichment keys set');
   }
 
   // ── Phase 4: CSV export ────────────────────────────────────────────────
   info('\nPHASE 4 — Writing CSV');
   companies.sort((a, b) => a.name.localeCompare(b.name));
 
-  const headers = ['Company Name', 'Address', 'Phone', 'Website', 'Email', 'Source'];
+  const headers = ['Company Name', 'Address', 'Phone', 'Website', 'Contact Name', 'Contact Title', 'Email', 'Email Source', 'Lead Source'];
   const lines = [
     headers.map(csvEscape).join(','),
     ...companies.map(c =>
-      [c.name, c.address, c.phone, c.website, c.email, c.source].map(csvEscape).join(',')
+      [c.name, c.address, c.phone, c.website, c.contactName, c.contactTitle, c.email, c.emailSource, c.source]
+        .map(csvEscape).join(',')
     ),
   ];
   fs.writeFileSync(CSV_FILE, lines.join('\n'), 'utf8');
