@@ -1,0 +1,11 @@
+# API keys — never commit
+.env
+
+# Runtime logs
+logs/
+
+# Raw API response dumps
+apify-results-raw.json
+
+# Node
+node_modules/
