@@ -4,7 +4,8 @@
   "description": "San Antonio MSA property management company lead scraper",
   "main": "scraper.js",
   "scripts": {
-    "start": "node scraper.js"
+    "start": "node scraper.js",
+    "resume": "node scraper.js --resume"
   },
   "dependencies": {
     "dotenv": "^16.4.5"
