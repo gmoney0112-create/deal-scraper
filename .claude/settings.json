@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_people_bulk_match"
+    ]
+  }
+}
