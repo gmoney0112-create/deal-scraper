@@ -1,0 +1,6 @@
+2026-06-25 17:12:07,390 [INFO] Starting apollo_setup.py — step: verify
+2026-06-25 17:12:07,390 [INFO] Timestamp: 2026-06-25T17:12:07.390413
+2026-06-25 17:12:07,393 [INFO] CSV loaded: 115 contacts, columns: ['First Name', 'Last Name', 'Title', 'Company', 'Email', 'Email Status']
+2026-06-25 17:12:07,754 [ERROR] Request error on attempt 1: HTTPSConnectionPool(host='api.apollo.io', port=443): Max retries exceeded with url: /v1/auth/health (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))
+2026-06-25 17:12:13,043 [ERROR] Request error on attempt 2: HTTPSConnectionPool(host='api.apollo.io', port=443): Max retries exceeded with url: /v1/auth/health (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))
+2026-06-25 17:12:18,386 [ERROR] Request error on attempt 3: HTTPSConnectionPool(host='api.apollo.io', port=443): Max retries exceeded with url: /v1/auth/health (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Forbidden')))
