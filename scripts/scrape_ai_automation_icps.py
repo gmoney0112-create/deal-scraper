@@ -1,5 +1,5 @@
 """
-Scrape 1,000-1,500 prime AI-automation ICP businesses from Google Places.
+Scrape 1,000-1,500 prime AI-automation ICP businesses via Google Places API (New).
 Covers Bexar County + surrounding counties + Texas statewide.
 """
 
@@ -9,9 +9,13 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("GOOGLE_PLACES_KEY")
-DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
-SEARCH_URL  = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+API_KEY    = os.getenv("GOOGLE_PLACES_KEY")
+SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
+FIELD_MASK = (
+    "places.id,places.displayName,places.formattedAddress,"
+    "places.nationalPhoneNumber,places.internationalPhoneNumber,"
+    "places.websiteUri,places.primaryType,places.types"
+)
 
 # ── ICP categories (businesses that clearly benefit from AI automation) ──────
 CATEGORIES = [
@@ -61,22 +65,17 @@ ALL_LOCATIONS = BEXAR_AND_SURROUNDING + TX_STATEWIDE
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 def text_search(query, page_token=None):
-    params = {"query": query, "key": API_KEY}
+    body = {"textQuery": query, "maxResultCount": 20}
     if page_token:
-        params["pagetoken"] = page_token
-    r = requests.get(SEARCH_URL, params=params, timeout=15)
+        body["pageToken"] = page_token
+    r = requests.post(
+        SEARCH_URL,
+        headers={"X-Goog-Api-Key": API_KEY, "X-Goog-FieldMask": FIELD_MASK, "Content-Type": "application/json"},
+        json=body,
+        timeout=15,
+    )
     r.raise_for_status()
     return r.json()
-
-def place_details(place_id):
-    params = {
-        "place_id": place_id,
-        "fields": "name,formatted_phone_number,website,formatted_address,types",
-        "key": API_KEY,
-    }
-    r = requests.get(DETAILS_URL, params=params, timeout=15)
-    r.raise_for_status()
-    return r.json().get("result", {})
 
 def clean_phone(raw):
     if not raw:
@@ -132,19 +131,22 @@ def scrape():
                     print(f"  ⚠ search error: {e}")
                     break
 
-                results = data.get("results", [])
+                results = data.get("places", [])
                 for r in results:
-                    pid = r.get("place_id")
+                    pid = r.get("id")
                     if pid and pid not in seen:
+                        phone = r.get("internationalPhoneNumber") or r.get("nationalPhoneNumber", "")
                         seen[pid] = {
-                            "_place_id":   pid,
-                            "_query_cat":  category,
-                            "_location":   location,
-                            "name":        r.get("name", ""),
-                            "address":     r.get("formatted_address", ""),
+                            "_place_id":  pid,
+                            "_query_cat": category,
+                            "_location":  location,
+                            "name":       r.get("displayName", {}).get("text", ""),
+                            "address":    r.get("formattedAddress", ""),
+                            "phone_raw":  phone,
+                            "website":    r.get("websiteUri", ""),
                         }
 
-                page_token = data.get("next_page_token")
+                page_token = data.get("nextPageToken")
                 pages += 1
                 if not page_token:
                     break
@@ -156,38 +158,22 @@ def scrape():
     print(f"\n✓ {len(seen)} unique places found. Fetching details…\n")
 
     rows = []
-    ids = list(seen.keys())
-    for i, pid in enumerate(ids):
-        entry = seen[pid]
-        try:
-            det = place_details(pid)
-            phone_raw = det.get("formatted_phone_number", "")
-            website   = det.get("website", "")
-            types     = det.get("types", [])
-        except Exception as e:
-            print(f"  ⚠ details error on {entry['name']}: {e}")
-            phone_raw, website, types = "", "", []
-
+    for pid, entry in seen.items():
         city_state = entry["_location"]
         city  = city_state.split(" TX")[0].strip()
-        state = "TX"
-
+        cat   = infer_category([], entry["_query_cat"])
         rows.append({
-            "Business Name":  entry["name"],
-            "Address":        entry["address"],
-            "City":           city,
-            "State":          state,
-            "Phone":          clean_phone(phone_raw),
-            "Website":        website,
-            "ICP Category":   infer_category(types, entry["_query_cat"]),
-            "Tags":           f"AI Automation ICP, {infer_category(types, entry['_query_cat'])}",
-            "Source":         "Google Places",
+            "Business Name":   entry["name"],
+            "Address":         entry["address"],
+            "City":            city,
+            "State":           "TX",
+            "Phone":           clean_phone(entry.get("phone_raw", "")),
+            "Website":         entry.get("website", ""),
+            "ICP Category":    cat,
+            "Tags":            f"AI Automation ICP, {cat}",
+            "Source":          "Google Places",
             "Source Location": city_state,
         })
-
-        if (i + 1) % 50 == 0:
-            print(f"  Details: {i+1}/{len(ids)} done")
-        time.sleep(0.12)
 
     return rows
 
