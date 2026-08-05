@@ -1,8 +1,35 @@
 # Deal Scraper — Master Handoff
 
-## ⚡ START HERE — New Session Checklist
+## 🛑 BLOCKED (2026-08-05) — Apollo/Clay MCP tool calls fail with -32003 in this environment
 
-1. **Apollo is pre-approved** — `.claude/settings.json` has wildcard `mcp__Apollo_io__*` (and legacy `mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__*`), no per-call prompts in new sessions
+**Do not spend another session assuming a "fresh container" fixes this.** It was tried and
+re-confirmed: a brand-new session on a brand-new branch (`claude/apollo-enrichment-32003-error-h8mda1`,
+based straight off this branch's history) hit the *exact same* `MCP error -32003: MCP tool call
+requires approval` on the very first call — `apollo_usage_stats_credit_usage_stats`, a plain
+read-only stats call, no arguments.
+
+Crucially, **`mcp__Clay__get-current-workspace` failed with the identical -32003 in the same
+session**, immediately after the Apollo failure. Clay and Apollo are unrelated connectors with
+separate OAuth grants — the only thing they share is that both are claude.ai-managed "connector"
+MCP servers (UUID-prefixed tool names, e.g. `mcp__10f11cb1-.../*`, `mcp__58f44d22-.../*`), as
+opposed to plain project-configured MCP servers. `.claude/settings.json`'s permission wildcard
+does not prevent this — that file governs Claude Code's own permission prompts, not this gate.
+
+**Conclusion: -32003 here is a live, per-call human-approval requirement on connector-style MCP
+tools, and this session type (remote/headless Claude Code on the web, no interactive UI attached)
+has no way to satisfy it.** It is not: stale OAuth state, a settings.json gap, or something that
+clears on container restart. Retrying in a new session reproduces it identically.
+
+**What actually needs to happen next:** run this from a session where a human is present to
+click "Approve" in real time when the tool-approval dialog appears — i.e. Claude Code CLI on a
+local machine, or the claude.ai chat UI, not a background/remote/triggered session. Alternatively,
+check whether the Apollo and Clay connectors can be pre-authorized in claude.ai connector settings
+in a way that skips per-call approval for headless sessions (unconfirmed whether that setting
+exists — worth checking before another session burns time on this).
+
+## ⚡ START HERE — New Session Checklist (once -32003 is actually resolved)
+
+1. **Apollo is pre-approved in settings.json** — wildcard `mcp__Apollo_io__*` (and legacy `mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__*`) — this controls Claude Code's own prompts only, NOT the -32003 connector-approval gate above
 2. **Load Apollo tools** via ToolSearch:
    ```
    select:mcp__Apollo_io__apollo_mixed_people_api_search,mcp__Apollo_io__apollo_people_bulk_match,mcp__Apollo_io__apollo_usage_stats_credit_usage_stats
