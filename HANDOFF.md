@@ -2,14 +2,35 @@
 
 ## ⚡ START HERE — New Session Checklist
 
-1. **Apollo is pre-approved** — `.claude/settings.json` has wildcard `mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__*`, no per-call prompts in new sessions
+1. **Apollo is pre-approved** — `.claude/settings.json` has wildcard `mcp__Apollo_io__*` (and legacy `mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__*`), no per-call prompts in new sessions
 2. **Load Apollo tools** via ToolSearch:
    ```
-   select:mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_mixed_people_api_search,mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_people_bulk_match,mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_usage_stats_credit_usage_stats
+   select:mcp__Apollo_io__apollo_mixed_people_api_search,mcp__Apollo_io__apollo_people_bulk_match,mcp__Apollo_io__apollo_usage_stats_credit_usage_stats
    ```
-3. **Check credits**: call `apollo_usage_stats_credit_usage_stats` (need ~950 credits)
+3. **Check credits**: call `apollo_usage_stats_credit_usage_stats` (need ~950 credits; as of 2026-08-05 there are 2,970 lead credits available)
 4. **Run enrichment**: follow Step 2 below — read `scripts/apollo_enrich_domains.py` for full algorithm
 5. **Tomorrow only**: re-run `scripts/scrape_digital_desert_leads.py` (Google Places quota resets midnight Pacific)
+
+### ⚠️ CRITICAL — persistence gotcha (bit a prior session on 2026-08-05)
+
+`/tmp/clay_enriched.json` is **wiped every time the container restarts**, but
+`scripts/merge_enriched_csv.py` reads ONLY that file and OVERWRITES
+`output/ghl_enriched_20260722_0446.csv` from scratch — it does not merge with
+what's already in the CSV. Running the merge script with a partial/fresh
+`/tmp/clay_enriched.json` **destroys previously-enriched contacts**.
+
+**The source of truth is now `output/apollo_enrichment_state.json`** (git-tracked,
+survives restarts), not `/tmp/clay_enriched.json`. Every new session MUST, before
+running any merge:
+```python
+import json
+state = json.load(open("output/apollo_enrichment_state.json"))
+json.dump(state["contacts"], open("/tmp/clay_enriched.json", "w"), indent=2)
+```
+And after adding new contacts each batch, append them into
+`state["contacts"]` and rewrite `output/apollo_enrichment_state.json` (dedupe by
+email) — not just `/tmp`. Then re-run `scripts/merge_enriched_csv.py` and commit
+both files together.
 
 ---
 
@@ -20,12 +41,30 @@
 | Total unique leads in master CSV | **1,423** |
 | — ICP business leads (B2B) | 1,324 |
 | — Digital desert leads (no website, ≤25 reviews) | 109 |
-| Leads with email enriched | 90 (6.3%) |
+| Leads with email enriched | 109 (8.2% of 1,324 ICP rows) |
 | Leads with phone | 1,384 (97.3%) |
 | Target total leads | **2,500** |
 | Still needed | **~1,077 more digital desert leads** |
-| Git branch | `claude/new-session-grjs70` |
+| Apollo domains processed | 100 / 901 (batches 1-5 of 46) |
+| Git branch | `claude/apollo-permissions-setup-xhndts` |
 | Remote | `gmoney0112-create/deal-scraper` |
+
+**2026-08-05 update:** Ran round 1 of Apollo domain enrichment (100 domains,
+batches 0-4). Of 100 domains searched, only 18 had any people in Apollo's
+database at all (most single-location small businesses have zero Apollo
+footprint), and 13 of those returned a verified email via bulk_match — a
+~13% domain yield. Note several matches are corporate/HQ contacts for
+franchise chains (Aspen Dental, Comfort Dental, Jefferson Dental, MINT
+dentistry, Familia Dental, Rodeo Dental) rather than the specific local
+location's owner — Apollo only has data on the parent org for these. Contact
+Title is preserved in the CSV so these can be filtered out before outreach
+if a "true independent owner only" list is wanted. Extrapolating the 13%
+domain yield across all 901 domains → roughly 115-120 more emails total
+(~210-215 combined, ~16% coverage), below the 25-40% target in this doc's
+original estimate — the original 950-credit/25-40% estimate assumed a much
+higher database hit rate than small local businesses actually have.
+Remaining work: batches 5-45 (801 domains). See the persistence gotcha above
+before continuing.
 
 ---
 
