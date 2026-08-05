@@ -1,5 +1,18 @@
 # Deal Scraper — Master Handoff
 
+## ⚡ START HERE — New Session Checklist
+
+1. **Apollo is pre-approved** — `.claude/settings.json` has wildcard `mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__*`, no per-call prompts in new sessions
+2. **Load Apollo tools** via ToolSearch:
+   ```
+   select:mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_mixed_people_api_search,mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_people_bulk_match,mcp__10f11cb1-0c60-42ee-ae56-c0b40a21720c__apollo_usage_stats_credit_usage_stats
+   ```
+3. **Check credits**: call `apollo_usage_stats_credit_usage_stats` (need ~950 credits)
+4. **Run enrichment**: follow Step 2 below — read `scripts/apollo_enrich_domains.py` for full algorithm
+5. **Tomorrow only**: re-run `scripts/scrape_digital_desert_leads.py` (Google Places quota resets midnight Pacific)
+
+---
+
 ## Current State (2026-08-05)
 
 | Metric | Value |
