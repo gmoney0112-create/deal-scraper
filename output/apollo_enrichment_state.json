@@ -99,7 +99,27 @@
     "dentistfwtx.com",
     "7daydentalcenter.com",
     "fwdentalarts.com",
-    "mstagersrealtypartners.com"
+    "mstagersrealtypartners.com",
+    "xsellencerealtysa.com",
+    "rmnsa.com",
+    "malouffinternationalgroup.com",
+    "zestrealtygroup.com",
+    "century21scottmyers.com",
+    "kwcityview.com",
+    "miguelherrera.com",
+    "kellerwilliamssa.com",
+    "mysatx.com",
+    "kwnewbraunfels.com",
+    "thesmarttteam.com",
+    "melissalaufer.com",
+    "wcorwin.com",
+    "emeraldhausgroup.com",
+    "anderspierce.com",
+    "vintageoakstexas.com",
+    "lxtxcollective.com",
+    "househuntersnb.com",
+    "newbraunfelsrealty.com",
+    "greenbeltrealty.com"
   ],
   "contacts": [
     {
@@ -717,9 +737,44 @@
       "last": "Stagers",
       "email": "missy@msrpsa.com",
       "title": "Broker/Owner"
+    },
+    {
+      "domain": "xsellencerealtysa.com",
+      "first": "Leah",
+      "last": "Rebollar",
+      "email": "leah@sa-broker.com",
+      "title": "Transaction Manager"
+    },
+    {
+      "domain": "kellerwilliamssa.com",
+      "first": "Chris",
+      "last": "Barr",
+      "email": "chris@chrisbarrrealtygroup.com",
+      "title": "Owner"
+    },
+    {
+      "domain": "rmnsa.com",
+      "first": "Rich",
+      "last": "Rupp",
+      "email": "richrupp@remax.net",
+      "title": "Broker/Owner"
+    },
+    {
+      "domain": "thesmarttteam.com",
+      "first": "Ashley",
+      "last": "Bera",
+      "email": "ashleybera@kw.com",
+      "title": "Marketing Director"
+    },
+    {
+      "domain": "anderspierce.com",
+      "first": "Paula",
+      "last": "Hine",
+      "email": "paula@anderspierce.com",
+      "title": "Office Manager"
     }
   ],
-  "last_batch_index_completed": 4,
+  "last_batch_index_completed": 5,
   "total_batches": 46,
   "notes": "batch index is 0-based, 20 domains per batch, from output/unenriched_domains.txt in file order. no-match domains (searched but Apollo has no data / no email available) are in processed_domains but not contacts."
 }

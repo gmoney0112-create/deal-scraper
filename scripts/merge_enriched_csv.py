@@ -7,6 +7,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 import glob, sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 def domain_from_url(url):
     if not url:
         return ""
@@ -41,14 +44,16 @@ def main():
     input_csv = candidates[0]
     print(f"ICP CSV   : {input_csv}")
 
-    # Load enriched contacts
-    enriched_path = Path("/tmp/clay_enriched.json")
+    # Load enriched contacts — output/apollo_enrichment_state.json is the git-tracked
+    # source of truth (NOT /tmp/clay_enriched.json, which is ephemeral and caused
+    # a previous session to silently overwrite already-found contacts — see HANDOFF.md).
+    enriched_path = Path("output/apollo_enrichment_state.json")
     if not enriched_path.exists():
-        print("No enriched contacts file found.")
+        print("No enrichment state file found.")
         sys.exit(1)
 
-    with open(enriched_path) as f:
-        contacts = json.load(f)
+    with open(enriched_path, encoding="utf-8") as f:
+        contacts = json.load(f)["contacts"]
     print(f"Contacts  : {len(contacts)} enriched records")
 
     # Build domain → best contact map
@@ -115,7 +120,7 @@ def main():
     print(f"  Total businesses   : {len(ghl_rows):,}")
     print(f"  With phone         : {with_phone:,}")
     print(f"  With email         : {with_email:,}  ({with_email/len(ghl_rows)*100:.1f}%)")
-    print(f"\n  GHL CSV → {out_path}")
+    print(f"\n  GHL CSV -> {out_path}")
     print(f"{'='*55}")
 
     # Show sample of enriched
