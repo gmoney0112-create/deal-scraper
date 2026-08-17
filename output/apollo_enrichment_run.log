@@ -1,0 +1,38 @@
+=== Apollo enrichment run started Mon Aug 17 13:32:16 CDT 2026 ===
+
+######## CHUNK 1 (batches of 5, ~100 domains) ########
+Domains remaining: 781 (already processed: 120)
+
+--- Batch 1/5: 20 domains ---
+  search: 7 people found across 20 domains
+  (skipped 5 preview results with no confident domain match)
+  + lee@dleeedwardsrealty.com  (dleeedwardsrealty.com — Broker/Owner, MCNE)
+
+--- Batch 2/5: 20 domains ---
+  search: 50 people found across 20 domains
+  (skipped 49 preview results with no confident domain match)
+  + lisa@legacybrokergroup.com  (legacybrokergroup.com — Director of Development and Cultural Growth)
+
+--- Batch 3/5: 20 domains ---
+  search: 50 people found across 20 domains
+  (skipped 2 preview results with no confident domain match)
+  (note: attributed kerrville.kw.com but match reveals kw.com — using true_dom)
+  + amee@kw.com  (kw.com — Owner/Operator Keller Williams Realty)
+  + laura@forepremierproperties.com  (forepremierproperties.com — Owner & Broker)
+
+--- Batch 4/5: 20 domains ---
+  search: 50 people found across 20 domains
+  (skipped 50 preview results with no confident domain match)
+  no attributable picks in this batch
+
+--- Batch 5/5: 20 domains ---
+  search: 29 people found across 20 domains
+  (skipped 3 preview results with no confident domain match)
+  + orios@seguinchevrolet.com  (seguinchevrolet.com — Marketing Director)
+  + grayson@beckbeck.net  (beckbuickgmc.com — General Manager)
+  + richie@mercermotorco.com  (mercermotorco.com — Owner)
+  + mmagana@seguinmotorcars.com  (seguinmotorcars.com — Store Manager)
+  + brian@camtruckz.com  (camtruckz.com — Sales Manager)
+  + stephanie.nalepa@thirdcoastautos.com  (thirdcoastautos.com — Collections Manager)
+
+=== Done. New emails this run: 10. Total contacts: 103. Unmatched previews skipped: 109 ===
