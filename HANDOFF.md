@@ -51,12 +51,50 @@ desert leads beyond this, the script would need new categories or new
 locations added — the current 49×36 city list is exhausted (minus
 San Antonio/New Braunfels/Seguin, still not touched since 2026-08-05).
 
-**Not yet done:** Apollo email enrichment on the 2,007 new leads. Per the
-~1.8% yield / ~1 credit-per-lead-checked economics found on the first 109
-(see `scripts/apollo_enrich_digital_desert.py`'s validation notes below),
-running all 2,007 through it would cost ~2,007 Apollo credits for an
-estimated ~35 real emails — confirm with the user before spending that,
-or filter to distinctive business names only (skip generic ones) first.
+**2026-08-17, round 3 — ⚠️ IMPORTANT FALSE-POSITIVE FINDING:** user said to
+run Apollo enrichment on all 2,007 new leads anyway. Ran it (2,116 total
+checked including the original 109) → 24 raw matches. Before merging,
+cross-checked each match's REAL organization city (from the full
+`bulk_match` reveal — `organization.city`, not the locked search preview)
+against the lead's actual known city. **17 of 24 (71%) were false
+positives** — same or similar business name, completely different city/
+company (e.g. "Heating and Air Conditioning" in Brownsville matched to
+"Garland Heating and Air Conditioning" in Garland, TX — 500+ miles away;
+"Terminix" matched a Fort Worth branch, not the Schertz one; even an exact
+name match, "Premier Industrial Services", turned out to be a
+same-named-but-different company in Corsicana, not Seguin).
+
+**This means the existing name-match + ambiguity guards in
+`scripts/apollo_enrich_digital_desert.py` are NOT sufficient on their own.**
+Apollo's fuzzy org-name search is not perfectly deterministic call-to-call —
+a name can appear to match only ONE distinct org at search time (passing
+the ambiguity guard) while other same-named orgs exist elsewhere and simply
+didn't surface in that particular query's ranked results. The only reliable
+signal found is a POST-MATCH city cross-check using the full reveal data
+(costs 1 extra credit per contact to re-verify, but cheap given how few
+survive: 24 contacts here).
+
+**Real corrected yield: 6 confirmed contacts out of 2,225 total leads ever
+checked across all rounds (~0.27%)** — Gate Tech Supply, JH Plumbing,
+Stewart Plumbing Co., Floresville Electric Light, Move Laredo, Lone Woof
+Grooming. `output/apollo_digital_desert_state.json`'s `contacts[]` now
+holds only these city-verified ones; the 18 false positives (including the
+previously-accepted Premier Industrial Services from the very first
+validation) were purged and reverted in the CSVs.
+
+**Recommendation for any future session:** given how low the true yield is
+even after fixing the false-positive problem, name-based Apollo enrichment
+on no-website leads is likely not worth running further at this scale
+unless a city-verification step is built into the main loop (not run as an
+after-the-fact patch like this time) AND the cost-per-verified-contact is
+explicitly re-confirmed with the user first — it's roughly 2,116 credits
+(search) + up to 24 credits (match) + 24 credits (city re-verify) ≈ 2,164
+credits for 6 real contacts this round.
+
+Final numbers: `output/ghl_master_leads_20260817_2245.csv` — 3,419 total
+leads, 322 emails (9.42%, up from 318 by the 4 net-new verified digital
+desert contacts — Gate Tech Supply was already counted from the original
+109 batch), 3,115 with phone (91.1%).
 
 ---
 
