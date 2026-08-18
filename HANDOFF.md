@@ -120,10 +120,52 @@ safety net as the primary enrichment).
 tagged "Secondary Contact" and matched to their business's existing row
 data (phone, city, ICP category) from the source ICP CSV.
 
-**Final master: `output/ghl_master_leads_20260817_2320.csv`** — 3,471 total
-rows (3,419 unique businesses + 52 secondary-contact rows for
-multi-threaded outreach at the same companies), 374 email-bearing rows
-(10.77%).
+Final master (before round 5): `output/ghl_master_leads_20260817_2320.csv`
+— 3,471 total rows, 374 email-bearing rows (10.77%).
+
+## ✅ 2026-08-17→18, round 5 — broad credit-spend sweep (304 → 1,976 contacts)
+
+User wanted to use the remaining ~2,500 Apollo monthly credits before they
+reset. Given the time pressure, extended the domain-based method (proven
+safe — zero false positives, unlike name-search) three ways:
+
+1. **Broadened seniority** across all 901 ICP domains (not just the 252
+   that already hit): `owner, founder, c_suite, vp, director, manager,
+   senior, entry` instead of just senior titles, with no per-domain pick
+   cap (take everyone found, not just the top 1). Script:
+   `scripts/apollo_burn_remaining.py`. Result: 304 → 1,484 contacts, no
+   credit exhaustion (no 402 at any point).
+2. **Page 2** of search results for the same 901 domains — 43 of 46
+   batches had hit Apollo's 50-result page cap, meaning results were
+   being truncated. Result: 1,484 → 1,976 (+492 new).
+3. **Page 3** — 36 of 46 batches were still hitting the cap on page 2, so
+   tried page 3 too. Result: +0 new (every candidate found was already
+   captured on pages 1-2) — genuine exhaustion of this method, not an
+   error. Confirms 295 unique domains now have at least one contact
+   (up from 252), 1,976 total contacts, ~6.7 contacts/domain average.
+
+All three passes used the same domain-verification safety net as the
+original enrichment (`organization.primary_domain` cross-check before
+keeping any contact) — this is NOT the name-search approach that had the
+71% false-positive problem in round 3.
+
+Rebuilt outputs:
+- `output/ghl_enriched_20260722_0446.csv` — single best contact per
+  domain, now 363/1,324 businesses with email (27.4%, up from 24.0%)
+- `output/ghl_secondary_contacts_20260817.csv` — all 1,681 non-primary
+  contacts (2nd/3rd/4th+ person at the same 295 domains), for
+  multi-threaded outreach
+- **`output/ghl_master_leads_20260818_0000.csv`** — final combined
+  master, **5,100 total rows**, 2,047 with email (40.1%), 4,773 with
+  phone (93.6%)
+
+Credit spend this round: 3 full sweeps of ~46 search batches each (138
+search credits) + bulk_match on every candidate found across all three
+passes (roughly 1,700+ match credits, since match is 1 credit per person
+whether or not they turn out to already be known — dedup happens after
+the credit is spent). No 402 (out of credits) error occurred at any point
+in this session, so the exact remaining balance is unknown — check the
+Apollo dashboard for the current number.
 
 ---
 
