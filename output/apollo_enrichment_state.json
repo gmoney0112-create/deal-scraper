@@ -2666,6 +2666,422 @@
       "last": "Martin",
       "email": "bryan@texasinvestorstitle.com",
       "title": "Vice President/Escrow Officer"
+    },
+    {
+      "domain": "adecco.com",
+      "first": "Hai",
+      "last": "Nguyen",
+      "email": "hai.nguyen@adecco.com",
+      "title": "Associate Director, Industrial Sales & Marketing, Manufacturing",
+      "secondary_contact": true
+    },
+    {
+      "domain": "acrisure.com",
+      "first": "Rob",
+      "last": "Odell",
+      "email": "rodell@acrisure.com",
+      "title": "Managing Director",
+      "secondary_contact": true
+    },
+    {
+      "domain": "acrisure.com",
+      "first": "Rachel",
+      "last": "Dainelli",
+      "email": "rdainelli@acrisure.com",
+      "title": "Senior Manager, Talent Enablement",
+      "secondary_contact": true
+    },
+    {
+      "domain": "aerotek.com",
+      "first": "Ed",
+      "last": "Polhorsky",
+      "email": "ed.polhorsky@aerotek.com",
+      "title": "Director of Market Operations",
+      "secondary_contact": true
+    },
+    {
+      "domain": "craneww.com",
+      "first": "Ewan",
+      "last": "Alexander",
+      "email": "ewan.alexander@craneww.com",
+      "title": "Vice President Business Development - EMEA",
+      "secondary_contact": true
+    },
+    {
+      "domain": "estes-express.com",
+      "first": "Rich",
+      "last": "Fiene",
+      "email": "rich.fiene@estes-express.com",
+      "title": "Account Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "elwoodstaffing.com",
+      "first": "Maren",
+      "last": "Chan",
+      "email": "maren.chan@elwoodstaffing.com",
+      "title": "Talent Acquisition Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "drhorton.com",
+      "first": "Jon",
+      "last": "Davern",
+      "email": "jdavern@drhorton.com",
+      "title": "Region President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "edwardjones.com",
+      "first": "John",
+      "last": "Balboa",
+      "email": "john.balboa@edwardjones.com",
+      "title": "Design Lead, AI Engineer & Creator",
+      "secondary_contact": true
+    },
+    {
+      "domain": "comparioninsurance.com",
+      "first": "John",
+      "last": "Bem",
+      "email": "john.bem@comparioninsurance.com",
+      "title": "Region Vice President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "comparioninsurance.com",
+      "first": "Katie",
+      "last": "Thomas",
+      "email": "katiem.thomas@comparioninsurance.com",
+      "title": "Associate Sales Manager - Comparion Insurance Agency, a Liberty Mutual Company",
+      "secondary_contact": true
+    },
+    {
+      "domain": "houseloan.com",
+      "first": "Tony",
+      "last": "Taveekanjana",
+      "email": "tonyt@houseloan.com",
+      "title": "National Retail Division - VP, Growth and Market Expansion",
+      "secondary_contact": true
+    },
+    {
+      "domain": "heb.com",
+      "first": "Brant",
+      "last": "Goering",
+      "email": "goering.brant@heb.com",
+      "title": "Director of IT Systems",
+      "secondary_contact": true
+    },
+    {
+      "domain": "hrblock.com",
+      "first": "Darren",
+      "last": "Simpson",
+      "email": "darren.simpson@hrblock.com",
+      "title": "Director Virtual",
+      "secondary_contact": true
+    },
+    {
+      "domain": "hrblock.com",
+      "first": "Bobby",
+      "last": "Orr",
+      "email": "bobby.orr@hrblock.com",
+      "title": "Regional Director",
+      "secondary_contact": true
+    },
+    {
+      "domain": "healthtexas.org",
+      "first": "Nick",
+      "last": "Zapata",
+      "email": "nick.zapata@healthtexas.org",
+      "title": "Director of Information Technology",
+      "secondary_contact": true
+    },
+    {
+      "domain": "goosehead.com",
+      "first": "James",
+      "last": "Thelucien",
+      "email": "james.thelucien@goosehead.com",
+      "title": "Agency Owner - Thelucien Agency",
+      "secondary_contact": true
+    },
+    {
+      "domain": "lennartitle.com",
+      "first": "Teri",
+      "last": "Edwards",
+      "email": "teri.edwards@lennartitle.com",
+      "title": "CA Retail President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "lennarmortgage.com",
+      "first": "Sara",
+      "last": "Demarest",
+      "email": "sarademarest@lennarmortgage.com",
+      "title": "Vice President, Division Manager, Mortgage New Home Construction",
+      "secondary_contact": true
+    },
+    {
+      "domain": "keeleyconstruction.com",
+      "first": "Tom",
+      "last": "Birkemeier",
+      "email": "tbirkemeier@keeleyconstruction.com",
+      "title": "CEO",
+      "secondary_contact": true
+    },
+    {
+      "domain": "labormax.net",
+      "first": "Kelley",
+      "last": "Hutchinson",
+      "email": "kelley.hutchinson@labormaxstaffing.com",
+      "title": "Owner",
+      "secondary_contact": true
+    },
+    {
+      "domain": "laborfinders.com",
+      "first": "Dennis",
+      "last": "Bashline",
+      "email": "dennis.bashline@laborfinders.com",
+      "title": "Northern CA Regional Director",
+      "secondary_contact": true
+    },
+    {
+      "domain": "independencetitle.com",
+      "first": "Michelle",
+      "last": "Hilton",
+      "email": "michelleh@independencetitle.com",
+      "title": "Vice President, Marketing Director",
+      "secondary_contact": true
+    },
+    {
+      "domain": "kineticcurve.com",
+      "first": "Nick",
+      "last": "Emba",
+      "email": "nick@kineticcurve.com",
+      "title": "Fractional Chief Marketing Officer",
+      "secondary_contact": true
+    },
+    {
+      "domain": "jeffersondentalclinics.com",
+      "first": "Eugene",
+      "last": "Crudu",
+      "email": "ecrudu@jdcweb.com",
+      "title": "Chief Financial Officer",
+      "secondary_contact": true
+    },
+    {
+      "domain": "lpl.com",
+      "first": "Jason",
+      "last": "Adams",
+      "email": "jason.adams@lplfinancial.com",
+      "title": "Assistant Vice President, Institution Client Success",
+      "secondary_contact": true
+    },
+    {
+      "domain": "officedepot.com",
+      "first": "Regina",
+      "last": "Fuson",
+      "email": "regina.fuson@officedepot.com",
+      "title": "Senior General Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "officedepot.com",
+      "first": "Dave",
+      "last": "Archer",
+      "email": "darcher@officemax.com",
+      "title": "Global IT Service Availability Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "moneyconcepts.com",
+      "first": "Jaime",
+      "last": "Rios",
+      "email": "jrios@moneyconcepts.com",
+      "title": "Regional President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "mysanitas.com",
+      "first": "Adriana",
+      "last": "Arraiz",
+      "email": "aarraiz@mysanitas.com",
+      "title": "HR & People Strategy Leader | Organizational Development & Change | Talent Acquisition & Executive Search | HRBP | L&D & Leadership | AI-Enabled Transformation | US, Latam, Caribbean & Europe",
+      "secondary_contact": true
+    },
+    {
+      "domain": "progressive.com",
+      "first": "Erina",
+      "last": "Bowie",
+      "email": "erina_bowie@progressive.com",
+      "title": "Small Business Owner",
+      "secondary_contact": true
+    },
+    {
+      "domain": "raymondjames.com",
+      "first": "Jerry",
+      "last": "Grause",
+      "email": "jerry.grause@raymondjames.com",
+      "title": "Vice President, Investments",
+      "secondary_contact": true
+    },
+    {
+      "domain": "primefinancial.com",
+      "first": "Amanda",
+      "last": "Dugger",
+      "email": "adugger@primefinancial.com",
+      "title": "Sr, Talent and Development Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "peopleready.com",
+      "first": "Amanda",
+      "last": "Farris",
+      "email": "afarris1@peopleready.com",
+      "title": "Branch Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "rodeodental.com",
+      "first": "Yahya",
+      "last": "Mansour",
+      "email": "drmansour@rodeodental.com",
+      "title": "Chief Medical Officer",
+      "secondary_contact": true
+    },
+    {
+      "domain": "southwestfunding.com",
+      "first": "Joe",
+      "last": "Garrett",
+      "email": "joeg@southwestfunding.com",
+      "title": "Chief Executive Officer",
+      "secondary_contact": true
+    },
+    {
+      "domain": "sunflowerbank.com",
+      "first": "Tom",
+      "last": "Noble",
+      "email": "tom.noble@sunflowerbank.com",
+      "title": "Senior Vice President, Commercial Real Estate Lending",
+      "secondary_contact": true
+    },
+    {
+      "domain": "spherion.com",
+      "first": "Georgia",
+      "last": "Meeks",
+      "email": "georgiameeks@spherion.com",
+      "title": "Franchise Owner- Greater Columbia, SC",
+      "secondary_contact": true
+    },
+    {
+      "domain": "stewart.com",
+      "first": "Brett",
+      "last": "Horton",
+      "email": "brett.horton@stewart.com",
+      "title": "Vice-President, Commercial Business Development & Lender Relations",
+      "secondary_contact": true
+    },
+    {
+      "domain": "securityfinance.com",
+      "first": "Aaron",
+      "last": "Hiner",
+      "email": "aaron.hiner@security-finance.com",
+      "title": "Talent Acquisition Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "swbcmortgage.com",
+      "first": "Rick",
+      "last": "Long",
+      "email": "rick.long@swbc.com",
+      "title": "Regional Vice President Sales/ Mountain West Region",
+      "secondary_contact": true
+    },
+    {
+      "domain": "swbcmortgage.com",
+      "first": "Jimmy",
+      "last": "Alexander",
+      "email": "jalexander@swbc.com",
+      "title": "Branch Manager & Senior Loan Officer",
+      "secondary_contact": true
+    },
+    {
+      "domain": "universityhealth.com",
+      "first": "William",
+      "last": "Phillips",
+      "email": "william.phillips@uhtx.com",
+      "title": "Sr. Vice President/CIO",
+      "secondary_contact": true
+    },
+    {
+      "domain": "usamortgage.com",
+      "first": "Ron",
+      "last": "Mueller",
+      "email": "rmueller@usa-mortgage.com",
+      "title": "President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "uvlogistics.com",
+      "first": "Christopher",
+      "last": "Woods",
+      "email": "christopher.woods@uvlogistics.com",
+      "title": "Vice President of Brokerage",
+      "secondary_contact": true
+    },
+    {
+      "domain": "tforcelogistics.com",
+      "first": "Andres",
+      "last": "Velasquez",
+      "email": "andres.velasquez@tforce.com",
+      "title": "Lead Operations Coordinator",
+      "secondary_contact": true
+    },
+    {
+      "domain": "tmdstaffing.com",
+      "first": "Ricky",
+      "last": "Dennis",
+      "email": "rdennis@texasmgmt.com",
+      "title": "Co President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "themoneystore.com",
+      "first": "Frank",
+      "last": "Mancino",
+      "email": "fmancino@themoneystore.com",
+      "title": "Executive Vice President Business Developement Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "truenorthadvisors.com",
+      "first": "Bernadeta",
+      "last": "Thomas",
+      "email": "bthomas@truenorthadvisors.com",
+      "title": "Human Resources Director",
+      "secondary_contact": true
+    },
+    {
+      "domain": "thesaltgroup.com",
+      "first": "Michael",
+      "last": "Friedmann",
+      "email": "mfriedmann@thesaltgroup.com",
+      "title": "Call Center Manager",
+      "secondary_contact": true
+    },
+    {
+      "domain": "vip-staffing.com",
+      "first": "Rachel",
+      "last": "Rivers",
+      "email": "rachel@vip-staffing.com",
+      "title": "President",
+      "secondary_contact": true
+    },
+    {
+      "domain": "yatesinsurance.com",
+      "first": "Rodda",
+      "last": "Yates",
+      "email": "rodda@yatesinsurance.com",
+      "title": "Chief Executive Officer",
+      "secondary_contact": true
     }
   ],
   "last_batch_index_completed": 43,

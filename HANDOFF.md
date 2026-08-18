@@ -91,10 +91,39 @@ explicitly re-confirmed with the user first — it's roughly 2,116 credits
 (search) + up to 24 credits (match) + 24 credits (city re-verify) ≈ 2,164
 credits for 6 real contacts this round.
 
-Final numbers: `output/ghl_master_leads_20260817_2245.csv` — 3,419 total
-leads, 322 emails (9.42%, up from 318 by the 4 net-new verified digital
-desert contacts — Gate Tech Supply was already counted from the original
-109 batch), 3,115 with phone (91.1%).
+Final numbers before round 4: `output/ghl_master_leads_20260817_2245.csv` —
+3,419 total leads, 322 emails (9.42%), 3,115 with phone (91.1%).
+
+## ✅ 2026-08-17, round 4 — secondary contacts at already-verified ICP domains
+
+User asked what the highest-value use of remaining Apollo credits (2,598
+left) was. Recommendation: revisit the 252 domains that already produced
+one verified contact during the original ICP enrichment (which
+deliberately picked only the single highest-seniority person per domain to
+save credits) and search for a 2nd/3rd person at those SAME domains —
+zero false-positive risk since a domain match is unambiguous (unlike the
+name-search problem found in round 3), and these 252 companies are already
+proven real.
+
+New script: `scripts/apollo_enrich_secondary_contacts.py`. Of 252 domains,
+164 had a resolvable business name for search-preview attribution (the
+other 88 have a `contacts[].domain` that came from Apollo's ground-truth
+`organization.primary_domain` rather than the originally-queried domain in
+`unenriched_domains.txt`, e.g. a redirect/subdomain difference, so no name
+lookup was available for them — a possible future improvement, not chased
+further here). Ran on all 164: **52 new, domain-verified secondary
+contacts** found, ~9 search credits + ~150 match credits. Every one cross-
+checked against `organization.primary_domain` before being kept (same
+safety net as the primary enrichment).
+
+`output/ghl_secondary_contacts_20260817.csv` — the 52 new contacts, each
+tagged "Secondary Contact" and matched to their business's existing row
+data (phone, city, ICP category) from the source ICP CSV.
+
+**Final master: `output/ghl_master_leads_20260817_2320.csv`** — 3,471 total
+rows (3,419 unique businesses + 52 secondary-contact rows for
+multi-threaded outreach at the same companies), 374 email-bearing rows
+(10.77%).
 
 ---
 
