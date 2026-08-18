@@ -1,5 +1,40 @@
 # Deal Scraper — Master Handoff
 
+## ✅ 2026-08-17 (later) — Digital desert scrape: 1,003 new no-website leads
+
+Google Places billing was fixed (project-level billing link was missing despite
+an active billing account — see `GOOGLE_PLACES_SETUP.md` for the full fix).
+Built `scripts/scrape_digital_desert_v2.py`, a checkpointed/resumable version
+of the original scraper: saves state to `output/digital_desert_scrape_state.json`
+after every city (crash-safe against a real paid-API run), and **skips San
+Antonio/New Braunfels/Seguin** (already covered 2026-08-05) to avoid duplicate
+spend, running the other 33 TX cities instead — smaller SA-metro towns first,
+since they showed much higher digital-desert yield than San Antonio itself.
+
+User asked to cap spend at **1,000 API calls**. Final run: **1,003 leads from
+1,021 API calls** (~0.98 leads/call) — the script's own internal
+`--target 1000` (leads) and the external call-cap both landed at nearly the
+same moment, so the script exited and wrote its own output CSV
+(`output/digital_desert_leads_v2_20260817_1547.csv`) before the external
+kill-by-PID even executed (`taskkill` errored "process not found" — harmless,
+it had already finished). 21 cities covered, 854/1,003 with phone (85.1%),
+113 at zero reviews (highest-priority tier). **13 of 33 target cities still
+completely unqueried** if more leads are wanted later — state file has
+`done_locations` to resume from cleanly without re-paying for completed ones.
+
+New combined master: `output/ghl_master_leads_20260817_1600.csv` — 2,420 total
+leads (1,324 ICP + 109 + 1,003 digital desert, deduped by Company+City), 318
+emails (13.1%), 2,236 with phone (92.4%).
+
+**Not yet done:** Apollo email enrichment on these 1,003 new leads. Per the
+~1.8% yield / ~1 credit-per-lead-checked economics found on the first 109
+(see `scripts/apollo_enrich_digital_desert.py`'s validation notes below),
+running all 1,003 through it would cost ~1,003 Apollo credits for an
+estimated ~15-20 real emails — confirm with the user before spending that,
+or filter to distinctive business names only (skip generic ones) first.
+
+---
+
 ## ✅ RESOLVED (2026-08-17) — Apollo enrichment complete via direct REST API
 
 The `-32003` MCP connector-approval gate below was never actually fixed — it was
