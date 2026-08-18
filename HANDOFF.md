@@ -26,11 +26,36 @@ New combined master: `output/ghl_master_leads_20260817_1600.csv` — 2,420 total
 leads (1,324 ICP + 109 + 1,003 digital desert, deduped by Company+City), 318
 emails (13.1%), 2,236 with phone (92.4%).
 
-**Not yet done:** Apollo email enrichment on these 1,003 new leads. Per the
+**2026-08-17, round 2:** user asked for 1,000 more leads. Resumed
+`scripts/scrape_digital_desert_v2.py` with `--target 2003` — the checkpoint
+correctly skipped all 21 already-done cities and picked up the 12 remaining
+(mostly larger TX cities: Laredo, Beaumont, Harlingen, Odessa, Midland,
+Abilene, Amarillo, Tyler, Killeen, Waco + finishing Laredo which had been
+left partial by round 1's cap). Final: **2,007 total leads from 1,516 total
+API calls** (cumulative — the v2 script always writes the full "seen" set,
+not just the delta). 1,736 with phone (86.5%), 211 at zero reviews.
+`output/digital_desert_leads_v2_20260817_2116.csv` supersedes the round-1
+file (contains everything, both rounds combined).
+
+New combined master: `output/ghl_master_leads_20260817_2130.csv` — **3,419
+total leads** (1,324 ICP + 109 + 2,007 digital desert, deduped by
+Company+City), 318 emails (9.3% — email % keeps dropping as more
+no-website leads are added, expected since this segment structurally has
+very low Apollo footprint), 3,115 with phone (91.1%).
+
+**All 33 target cities now fully covered** (`done_locations` in
+`output/digital_desert_scrape_state.json` — the 13 SA-metro towns fully
+done, 20 major TX cities: Laredo was left partial by round 1 but resumed
+and completed in round 2, everything else done). To get more digital
+desert leads beyond this, the script would need new categories or new
+locations added — the current 49×36 city list is exhausted (minus
+San Antonio/New Braunfels/Seguin, still not touched since 2026-08-05).
+
+**Not yet done:** Apollo email enrichment on the 2,007 new leads. Per the
 ~1.8% yield / ~1 credit-per-lead-checked economics found on the first 109
 (see `scripts/apollo_enrich_digital_desert.py`'s validation notes below),
-running all 1,003 through it would cost ~1,003 Apollo credits for an
-estimated ~15-20 real emails — confirm with the user before spending that,
+running all 2,007 through it would cost ~2,007 Apollo credits for an
+estimated ~35 real emails — confirm with the user before spending that,
 or filter to distinctive business names only (skip generic ones) first.
 
 ---
